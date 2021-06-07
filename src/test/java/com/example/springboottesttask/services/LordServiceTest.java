@@ -37,16 +37,16 @@ class LordServiceTest {
     @Test
     public void testFindLordById() {
         Lord lord = getLord();
-        Optional<Lord> ofResult = Optional.<Lord>of(lord);
-        when(this.lordRepository.findById((Long) any())).thenReturn(ofResult);
+        Optional<Lord> ofResult = Optional.of(lord);
+        when(this.lordRepository.findById(any())).thenReturn(ofResult);
         assertSame(lord, this.lordService.findLordById(123L));
-        verify(this.lordRepository).findById((Long) any());
+        verify(this.lordRepository).findById(any());
         assertTrue(this.lordService.getLordsWithoutPlanets().isEmpty());
     }
 
     private Lord getLord() {
         Lord lord = new Lord();
-        lord.setPlanetList(new ArrayList<Planet>());
+        lord.setPlanetList(new ArrayList<>());
         lord.setName("Name");
         lord.setLordId(123L);
         lord.setAge(1);
@@ -55,17 +55,17 @@ class LordServiceTest {
 
     @Test
     public void testFindLordById2() {
-        when(this.lordRepository.findById((Long) any())).thenReturn(Optional.<Lord>empty());
+        when(this.lordRepository.findById(any())).thenReturn(Optional.empty());
         assertThrows(LordNotFoundException.class, () -> this.lordService.findLordById(123L));
-        verify(this.lordRepository).findById((Long) any());
+        verify(this.lordRepository).findById(any());
     }
 
     @Test
     public void testCreateLord() {
         Lord lord = getLord();
-        when(this.lordRepository.save((Lord) any())).thenReturn(lord);
+        when(this.lordRepository.save(any())).thenReturn(lord);
         assertEquals(123L, this.lordService.createLord("Name", 1).longValue());
-        verify(this.lordRepository).save((Lord) any());
+        verify(this.lordRepository).save(any());
         assertTrue(this.lordService.getLordsWithoutPlanets().isEmpty());
     }
 
@@ -74,15 +74,15 @@ class LordServiceTest {
         Lord lord = getLord();
 
         Planet planet = getPlanet(lord, true);
-        Optional<Planet> ofResult = Optional.<Planet>of(planet);
-        when(this.planetRepository.findById((Long) any())).thenReturn(ofResult);
+        Optional<Planet> ofResult = Optional.of(planet);
+        when(this.planetRepository.findById(any())).thenReturn(ofResult);
 
         Lord lord1 = getLord();
-        Optional<Lord> ofResult1 = Optional.<Lord>of(lord1);
-        when(this.lordRepository.findById((Long) any())).thenReturn(ofResult1);
+        Optional<Lord> ofResult1 = Optional.of(lord1);
+        when(this.lordRepository.findById(any())).thenReturn(ofResult1);
         assertSame(lord1, this.lordService.setPlanetToLord(123L, 123L));
-        verify(this.planetRepository).findById((Long) any());
-        verify(this.lordRepository).findById((Long) any());
+        verify(this.planetRepository).findById(any());
+        verify(this.lordRepository).findById(any());
         assertTrue(this.lordService.getLordsWithoutPlanets().isEmpty());
     }
 
@@ -101,15 +101,15 @@ class LordServiceTest {
         Lord lord = getLord();
 
         Planet planet = getPlanet(lord, false);
-        Optional<Planet> ofResult = Optional.<Planet>of(planet);
-        when(this.planetRepository.findById((Long) any())).thenReturn(ofResult);
+        Optional<Planet> ofResult = Optional.of(planet);
+        when(this.planetRepository.findById(any())).thenReturn(ofResult);
 
         Lord lord1 = getLord();
-        Optional<Lord> ofResult1 = Optional.<Lord>of(lord1);
+        Optional<Lord> ofResult1 = Optional.of(lord1);
 
         Lord lord2 = getLord();
-        when(this.lordRepository.save((Lord) any())).thenReturn(lord2);
-        when(this.lordRepository.findById((Long) any())).thenReturn(ofResult1);
+        when(this.lordRepository.save(any())).thenReturn(lord2);
+        when(this.lordRepository.findById(any())).thenReturn(ofResult1);
         Lord actualSetPlanetToLordResult = this.lordService.setPlanetToLord(123L, 123L);
         assertSame(lord1, actualSetPlanetToLordResult);
         assertEquals(
@@ -117,24 +117,24 @@ class LordServiceTest {
                         + " lord=Lord(lordId=123, name=Name, age=1, planetList=[]))])",
                 actualSetPlanetToLordResult.toString());
         assertEquals(1, actualSetPlanetToLordResult.getPlanetList().size());
-        verify(this.planetRepository).findById((Long) any());
-        verify(this.lordRepository).findById((Long) any());
-        verify(this.lordRepository).save((Lord) any());
+        verify(this.planetRepository).findById(any());
+        verify(this.lordRepository).findById(any());
+        verify(this.lordRepository).save(any());
         assertTrue(this.lordService.getLordsWithoutPlanets().isEmpty());
     }
 
     @Test
     public void testSetPlanetToLord3() {
-        when(this.planetRepository.findById((Long) any())).thenReturn(Optional.<Planet>empty());
+        when(this.planetRepository.findById(any())).thenReturn(Optional.empty());
 
         Lord lord = getLord();
-        Optional<Lord> ofResult = Optional.<Lord>of(lord);
+        Optional<Lord> ofResult = Optional.of(lord);
 
         Lord lord1 = getLord();
-        when(this.lordRepository.save((Lord) any())).thenReturn(lord1);
-        when(this.lordRepository.findById((Long) any())).thenReturn(ofResult);
+        when(this.lordRepository.save(any())).thenReturn(lord1);
+        when(this.lordRepository.findById(any())).thenReturn(ofResult);
         assertThrows(PlanetNotFoundException.class, () -> this.lordService.setPlanetToLord(123L, 123L));
-        verify(this.planetRepository).findById((Long) any());
+        verify(this.planetRepository).findById(any());
     }
 
     @Test
@@ -142,20 +142,20 @@ class LordServiceTest {
         Lord lord = getLord();
 
         Planet planet = getPlanet(lord, false);
-        Optional<Planet> ofResult = Optional.<Planet>of(planet);
-        when(this.planetRepository.findById((Long) any())).thenReturn(ofResult);
+        Optional<Planet> ofResult = Optional.of(planet);
+        when(this.planetRepository.findById(any())).thenReturn(ofResult);
 
         Lord lord1 = getLord();
-        when(this.lordRepository.save((Lord) any())).thenReturn(lord1);
-        when(this.lordRepository.findById((Long) any())).thenReturn(Optional.<Lord>empty());
+        when(this.lordRepository.save(any())).thenReturn(lord1);
+        when(this.lordRepository.findById(any())).thenReturn(Optional.empty());
         assertThrows(LordNotFoundException.class, () -> this.lordService.setPlanetToLord(123L, 123L));
-        verify(this.planetRepository).findById((Long) any());
-        verify(this.lordRepository).findById((Long) any());
+        verify(this.planetRepository).findById(any());
+        verify(this.lordRepository).findById(any());
     }
 
     @Test
     public void testGetLordsWithoutPlanets() {
-        ArrayList<Lord> lordList = new ArrayList<Lord>();
+        ArrayList<Lord> lordList = new ArrayList<>();
         when(this.lordRepository.getLordsByPlanetList()).thenReturn(lordList);
         List<Lord> actualLordsWithoutPlanets = this.lordService.getLordsWithoutPlanets();
         assertSame(lordList, actualLordsWithoutPlanets);
@@ -166,7 +166,7 @@ class LordServiceTest {
 
     @Test
     public void testGetLordsByAge() {
-        when(this.lordRepository.getLordsByAge()).thenReturn(new ArrayList<Lord>());
+        when(this.lordRepository.getLordsByAge()).thenReturn(new ArrayList<>());
         assertTrue(this.lordService.getLordsByAge().isEmpty());
         verify(this.lordRepository).getLordsByAge();
         assertTrue(this.lordService.getLordsWithoutPlanets().isEmpty());

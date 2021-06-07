@@ -1,10 +1,6 @@
 package com.example.springboottesttask.controllers;
 
-import com.example.springboottesttask.controllers.dto.LordAndPlanetRequestDTO;
-import com.example.springboottesttask.controllers.dto.LordRequestDTO;
-import com.example.springboottesttask.controllers.dto.LordResponseDTO;
-import com.example.springboottesttask.controllers.dto.PlanetRequestDTO;
-import com.example.springboottesttask.controllers.dto.PlanetResponseDTO;
+import com.example.springboottesttask.controllers.dto.*;
 import com.example.springboottesttask.entities.Lord;
 import com.example.springboottesttask.entities.Planet;
 import com.example.springboottesttask.repositories.LordRepository;
@@ -15,13 +11,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -33,25 +29,19 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 //import org.junit.jupiter.api.Assertions;
 
 
 @ContextConfiguration(classes = {MainController.class})
 @ExtendWith(SpringExtension.class)
-@WebMvcTest
+@RunWith(MockitoJUnitRunner.class)
+
 class MainControllerTest {
 
     @Autowired
     private MainController mainController;
 
-    @Autowired
-    private MockMvc mockMvc;
 
     @MockBean
     private PlanetService planetService;
@@ -59,6 +49,23 @@ class MainControllerTest {
     @MockBean
     private LordService lordService;
 
+    private Planet getPlanet(Lord lord) {
+        Planet planet = new Planet();
+        planet.setLord(lord);
+        planet.setPlanetId(123L);
+        planet.setLordId(123L);
+        planet.setName("Name");
+        planet.setIsOwned(true);
+        return planet;
+    }
+    private Lord getLord() {
+        Lord lord = new Lord();
+        lord.setPlanetList(new ArrayList<>());
+        lord.setName("Name");
+        lord.setLordId(123L);
+        lord.setAge(1);
+        return lord;
+    }
     @Test
     public void testCreatePlanet() throws Exception {
         when(this.planetService.createPlanet(anyString())).thenReturn(1L);
@@ -82,7 +89,7 @@ class MainControllerTest {
 
         Planet planet = getPlanet(lord);
         PlanetRepository planetRepository = mock(PlanetRepository.class);
-        when(planetRepository.findById((Long) any())).thenReturn(Optional.<Planet>of(planet));
+        when(planetRepository.findById(any())).thenReturn(Optional.of(planet));
         PlanetService planetService = new PlanetService(planetRepository, mock(LordRepository.class));
         MainController mainController = new MainController(planetService,
                 new LordService(mock(LordRepository.class), mock(PlanetRepository.class)));
@@ -91,30 +98,22 @@ class MainControllerTest {
         assertEquals(123L, actualPlanetById.getPlanetId().longValue());
         assertEquals("Name", actualPlanetById.getName());
         assertEquals(123L, actualPlanetById.getLordId().longValue());
-        verify(planetRepository).findById((Long) any());
+        verify(planetRepository).findById(any());
         assertTrue(mainController.getLordsWithoutPlanets().isEmpty());
     }
 
-    private Planet getPlanet(Lord lord) {
-        Planet planet = new Planet();
-        planet.setLord(lord);
-        planet.setPlanetId(123L);
-        planet.setLordId(123L);
-        planet.setName("Name");
-        planet.setIsOwned(true);
-        return planet;
-    }
+
 
     @Test
     public void testCreateLord() {
         Lord lord = getLord();
         LordRepository lordRepository = mock(LordRepository.class);
-        when(lordRepository.save((Lord) any())).thenReturn(lord);
+        when(lordRepository.save(any())).thenReturn(lord);
         LordService lordService = new LordService(lordRepository, mock(PlanetRepository.class));
         MainController mainController = new MainController(
                 new PlanetService(mock(PlanetRepository.class), mock(LordRepository.class)), lordService);
         assertEquals(123L, mainController.createLord(new LordRequestDTO("Name", 1)).longValue());
-        verify(lordRepository).save((Lord) any());
+        verify(lordRepository).save(any());
         assertTrue(mainController.getLordsWithoutPlanets().isEmpty());
     }
 
@@ -122,7 +121,7 @@ class MainControllerTest {
     public void testGetLordById() {
         Lord lord = getLord();
         LordRepository lordRepository = mock(LordRepository.class);
-        when(lordRepository.findById((Long) any())).thenReturn(Optional.<Lord>of(lord));
+        when(lordRepository.findById(any())).thenReturn(Optional.of(lord));
         LordService lordService = new LordService(lordRepository, mock(PlanetRepository.class));
         MainController mainController = new MainController(
                 new PlanetService(mock(PlanetRepository.class), mock(LordRepository.class)), lordService);
@@ -131,7 +130,7 @@ class MainControllerTest {
         assertTrue(actualLordById.getPlanetList().isEmpty());
         assertEquals("Name", actualLordById.getName());
         assertEquals(123L, actualLordById.getLordId().longValue());
-        verify(lordRepository).findById((Long) any());
+        verify(lordRepository).findById(any());
         assertTrue(mainController.getLordsWithoutPlanets().isEmpty());
     }
 
@@ -140,10 +139,10 @@ class MainControllerTest {
         Lord lord = getLord();
 
         Planet planet = getPlanet(lord);
-        Optional<Planet> ofResult = Optional.<Planet>of(planet);
+        Optional<Planet> ofResult = Optional.of(planet);
         PlanetRepository planetRepository = mock(PlanetRepository.class);
-        doNothing().when(planetRepository).deleteById((Long) any());
-        when(planetRepository.findById((Long) any())).thenReturn(ofResult);
+        doNothing().when(planetRepository).deleteById(any());
+        when(planetRepository.findById(any())).thenReturn(ofResult);
         PlanetService planetService = new PlanetService(planetRepository, mock(LordRepository.class));
         MainController mainController = new MainController(planetService,
                 new LordService(mock(LordRepository.class), mock(PlanetRepository.class)));
@@ -151,8 +150,8 @@ class MainControllerTest {
                 "Successfully destroyed Planet(planetId=123, name=Name, isOwned=true, lordId=123, lord=Lord(lordId=123,"
                         + " name=Name, age=1, planetList=[]))",
                 mainController.deletePlanetById(123L));
-        verify(planetRepository).deleteById((Long) any());
-        verify(planetRepository).findById((Long) any());
+        verify(planetRepository).deleteById(any());
+        verify(planetRepository).findById(any());
         assertTrue(mainController.getLordsWithoutPlanets().isEmpty());
     }
 
@@ -164,22 +163,22 @@ class MainControllerTest {
 
         Planet planet = getPlanet(lord);
         PlanetRepository planetRepository = mock(PlanetRepository.class);
-        when(planetRepository.findById((Long) any())).thenReturn(Optional.<Planet>of(planet));
+        when(planetRepository.findById(any())).thenReturn(Optional.of(planet));
 
         Lord lord1 = getLord();
         LordRepository lordRepository = mock(LordRepository.class);
-        when(lordRepository.findById((Long) any())).thenReturn(Optional.<Lord>of(lord1));
+        when(lordRepository.findById(any())).thenReturn(Optional.of(lord1));
         PlanetService planetService = new PlanetService(planetRepository, lordRepository);
 
         Lord lord2 = getLord();
         LordRepository lordRepository1 = mock(LordRepository.class);
-        when(lordRepository1.findById((Long) any())).thenReturn(Optional.<Lord>of(lord2));
+        when(lordRepository1.findById(any())).thenReturn(Optional.of(lord2));
 
         Lord lord3 = getLord();
 
         Planet planet1 = getPlanet(lord3);
         PlanetRepository planetRepository1 = mock(PlanetRepository.class);
-        when(planetRepository1.findById((Long) any())).thenReturn(Optional.<Planet>of(planet1));
+        when(planetRepository1.findById(any())).thenReturn(Optional.of(planet1));
         MainController mainController = new MainController(planetService,
                 new LordService(lordRepository1, planetRepository1));
         LordResponseDTO actualAppointLordToRuleThePlanetResult = mainController
@@ -188,25 +187,18 @@ class MainControllerTest {
         assertTrue(actualAppointLordToRuleThePlanetResult.getPlanetList().isEmpty());
         assertEquals("Name", actualAppointLordToRuleThePlanetResult.getName());
         assertEquals(123L, actualAppointLordToRuleThePlanetResult.getLordId().longValue());
-        verify(planetRepository).findById((Long) any());
-        verify(lordRepository).findById((Long) any());
-        verify(lordRepository1).findById((Long) any());
-        verify(planetRepository1).findById((Long) any());
+        verify(planetRepository).findById(any());
+        verify(lordRepository).findById(any());
+        verify(lordRepository1).findById(any());
+        verify(planetRepository1).findById(any());
         assertTrue(mainController.getLordsWithoutPlanets().isEmpty());
     }
 
-    private Lord getLord() {
-        Lord lord = new Lord();
-        lord.setPlanetList(new ArrayList<Planet>());
-        lord.setName("Name");
-        lord.setLordId(123L);
-        lord.setAge(1);
-        return lord;
-    }
+
 
     @Test
     public void testGetLordsWithoutPlanets() throws Exception {
-        when(this.lordService.getLordsWithoutPlanets()).thenReturn(new ArrayList<Lord>());
+        when(this.lordService.getLordsWithoutPlanets()).thenReturn(new ArrayList<>());
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/getLordsWithoutPlanets");
         MockMvcBuilders.standaloneSetup(this.mainController)
                 .build()
@@ -218,7 +210,7 @@ class MainControllerTest {
 
     @Test
     public void testGetLordsWithoutPlanets2() throws Exception {
-        when(this.lordService.getLordsWithoutPlanets()).thenReturn(new ArrayList<Lord>());
+        when(this.lordService.getLordsWithoutPlanets()).thenReturn(new ArrayList<>());
         MockHttpServletRequestBuilder getResult = MockMvcRequestBuilders.get("/getLordsWithoutPlanets");
         getResult.contentType("Not all who wander are lost");
         MockMvcBuilders.standaloneSetup(this.mainController)
@@ -232,7 +224,7 @@ class MainControllerTest {
 
     @Test
     public void testGetLordsOrderedByAge() throws Exception {
-        when(this.lordService.getLordsByAge()).thenReturn(new ArrayList<Lord>());
+        when(this.lordService.getLordsByAge()).thenReturn(new ArrayList<>());
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/getLordsByAge");
         MockMvcBuilders.standaloneSetup(this.mainController)
                 .build()
@@ -244,7 +236,7 @@ class MainControllerTest {
 
     @Test
     public void testGetLordsOrderedByAge2() throws Exception {
-        when(this.lordService.getLordsByAge()).thenReturn(new ArrayList<Lord>());
+        when(this.lordService.getLordsByAge()).thenReturn(new ArrayList<>());
         MockHttpServletRequestBuilder getResult = MockMvcRequestBuilders.get("/getLordsByAge");
         getResult.contentType("Not all who wander are lost");
         MockMvcBuilders.standaloneSetup(this.mainController)
